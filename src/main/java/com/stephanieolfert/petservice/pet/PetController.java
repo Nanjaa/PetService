@@ -18,7 +18,8 @@ public class PetController {
 	
 	@GetMapping("/pets")
 	public List<Pet> searchPets() {
-		return petService.searchPets();
+		// return petService.searchPets();
+		return new ArrayList<Pet>();
 	}
 	
 	@PostMapping("/pets")

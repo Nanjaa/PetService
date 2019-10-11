@@ -132,8 +132,14 @@ public class Pet {
 		return isValid;
 	}
 
+	@Override
+	public String toString() {
+		return "Pet [id=" + id + ", name=" + name + ", type=" + type + ", age=" + age + ", sex=" + sex
+				+ ", description=" + description + ", owner_email=" + owner_email + ", image_url=" + image_url + "]";
+	}
+
 	
-	// TODO: create a toString() when everything is done and happy
+	
 	
 	
 }
