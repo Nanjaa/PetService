@@ -12,29 +12,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class PetController {
-	
-	@Autowired
-	private PetService petService;
-	
-	@GetMapping("/pets")
-	public List<Pet> searchPets() {
-		// return petService.searchPets();
-		return new ArrayList<Pet>();
-	}
-	
-	@PostMapping("/pets")
-	public List<Long> createPets() {
-		return new ArrayList<Long>();
-	}
-	
-	@PutMapping("/pets")
-	public List<Pet> updatePets() {
-		return new ArrayList<Pet>();
-	}
-	
-	@DeleteMapping("/pets")
-	public boolean deletePets() {
-		return true;
-	}
-	
+
+    @Autowired
+    private PetService petService;
+
+    @GetMapping("/pets")
+    public List<Pet> searchPets() {
+        return petService.searchPets(new Pet());
+    }
+
+    @PostMapping("/pets")
+    public List<Long> createPets() {
+        return new ArrayList<Long>();
+    }
+
+    @PutMapping("/pets")
+    public List<Pet> updatePets() {
+        return new ArrayList<Pet>();
+    }
+
+    @DeleteMapping("/pets")
+    public boolean deletePets() {
+        return true;
+    }
+
 }
