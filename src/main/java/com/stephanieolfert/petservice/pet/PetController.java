@@ -1,6 +1,6 @@
 package com.stephanieolfert.petservice.pet;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,23 +19,23 @@ public class PetController {
     private PetService petService;
 
     @GetMapping("/pets")
-    public List<Pet> searchPets() {
-        return petService.searchPets(new Pet());
+    public @ResponseBody List<Pet> searchPets() {
+        return petService.searchPets();
     }
 
     @PostMapping("/pets")
-    public @ResponseBody List<Long> createPets(@RequestBody List<Pet> pets) {
+    public @ResponseBody List<Long> createPets(@RequestBody Pet pets) {
         return petService.createPets(pets);
     }
 
     @PutMapping("/pets")
-    public List<Pet> updatePets() {
-        return new ArrayList<Pet>();
+    public @ResponseBody List<Pet> updatePets(@RequestBody Collection<Pet> pets) {
+        return petService.updatePets(pets);
     }
 
     @DeleteMapping("/pets")
-    public boolean deletePets() {
-        return true;
+    public boolean deletePets(@RequestBody Collection<Long> petIds) {
+        return petService.deletePets();
     }
 
 }
