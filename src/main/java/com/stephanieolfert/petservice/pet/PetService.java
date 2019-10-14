@@ -1,7 +1,6 @@
 package com.stephanieolfert.petservice.pet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -18,35 +17,26 @@ public class PetService {
 
     private static final Logger LOG = Logger.getLogger( PetService.class.getName() );
 
-    List<Pet> examplePets = Arrays.asList(
-            new Pet("kitty", Pet.Type.CAT, 1, Pet.Sex.M, "The cutest cat ever!", "stephanie.r.olfert@gmail.com", "stephanieolfert.com/testimg.png"),
-            new Pet("doggy", Pet.Type.DOG, 2, Pet.Sex.F, "The cutest dog ever!", "stephanie.r.olfert@gmail.com", "stephanieolfert.com/testimg.png"),
-            new Pet("birdy", Pet.Type.BIRD, 3, Pet.Sex.M, "The cutest bird ever!", "stephanie.r.olfert@gmail.com", "stephanieolfert.com/testimg.png"),
-            new Pet("fishy", Pet.Type.FISH, 4, Pet.Sex.F, "The cutest fish ever!", "stephanie.r.olfert@gmail.com", "stephanieolfert.com/testimg.png")
-            );
-    
     @Autowired
     private PetRepository petRepository;
 
     
     public List<Pet> searchPets(Pet params) {
+        // TODO: For now, just returning all - refine with specific search
         List<Pet> pets = new ArrayList<Pet>();
-        
-        // TODO: Build the query using dbutils
-        // TODO: This is where we'll query the db
-
-        return examplePets;
+        petRepository.findAll().forEach(pets::add);
+        return pets;
     }
 
     @PostMapping("/pets")
     public List<Long> createPets(List<Pet> pets) {
         List<Long> ids = new ArrayList<Long>();
-
         for (Pet pet : pets) {
-            if (pet.validateFields()) {
-                // TODO: This is where we'll add them to the db
+            Pet savedPet = petRepository.save(pet);
+            if (savedPet != null && savedPet.getId() > 0) {
+                ids.add(savedPet.getId());
             } else {
-                LOG.warning("This pet had invalid fields and could not be created: " + pet.toString());
+                LOG.warning("Following pet could not be saved: ");
             }
         }
 
@@ -58,12 +48,8 @@ public class PetService {
         List<Pet> updatedPets = new ArrayList<Pet>();
 
         for (Pet pet : pets) {
-            if (pet.validateFields()) {
-                // TODO: This is where we'll update them in the db
-                updatedPets.add(pet);
-            } else {
-                LOG.warning("This pet had invalid fields and could not be updated: " + pet.toString());
-            }
+         // TODO: This is where we'll update them in the db
+            updatedPets.add(pet);
         }
 
         return updatedPets;

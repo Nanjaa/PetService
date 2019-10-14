@@ -1,52 +1,71 @@
 package com.stephanieolfert.petservice.pet;
 
-import java.util.logging.Logger;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.PositiveOrZero;
 
 @Entity
+@Table(name = "pets")
 public class Pet {
 
-    private static final Logger LOG = Logger.getLogger( Pet.class.getName() );
-
-    public enum Sex {
-        M(1),
-        F(2);
-
-        private int value;
-        private Sex(int value) {
-            this.value = value;
-        }
-    }
-    public enum Type {
-        CAT(1),
-        DOG(2),
-        BIRD(3),
-        FISH(4);
-
-        private int value;
-        private Type(int value) {
-            this.value = value;
-        }
-    }
-
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "name", nullable = false)
+    @NotBlank(message = "First name required")
     private String name;
-    private Type type;
+
+    @Column(name = "type", nullable = false)
+    @Min(value = 1, message = "Type must be greater than 0")
+    @Max(value = TYPE_FISH, message = "Not a valid type")
+    private int type;
+
+    @Column(name = "age", nullable = false)
+    @PositiveOrZero(message = "Age cannot be a negative number")
     private int age;
-    private Sex sex;
+
+    @Column(name = "sex", nullable = false)
+    @Min(value = SEX_M, message = "Sex can only be values 1 (M) or 2 (F)")
+    @Max(value = SEX_F, message = "Sex can only be values 1 (M) or 2 (F)")
+    private int sex;
+
+    @Column(name = "description", nullable = false)
+    @NotBlank(message = "Description required")
     private String description;
+
+    @Column(name = "owner_email", nullable = false)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be a valid format")
     private String owner_email;
+
+    @Column(name = "image_url", nullable = false)
+    @Pattern(regexp = "(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)", message = "Image URL must be a valid format")
     private String image_url;
+    
+    // Constants
+    public static final int TYPE_CAT = 1;
+    public static final int TYPE_DOG = 2;
+    public static final int TYPE_BIRD = 3;
+    public static final int TYPE_FISH = 4;
+
+    public static final int SEX_M = 1;
+    public static final int SEX_F = 2;
 
     public Pet() {
     }
 
-    public Pet(String name, Type type, int age, Sex sex, String description, String owner_email, String image_url) {
+    public Pet(String name, int type, int age, int sex, String description, String owner_email, String image_url) {
         super();
         this.name = name;
         this.type = type;
@@ -69,10 +88,10 @@ public class Pet {
     public void setName(String name) {
         this.name = name;
     }
-    public Type getType() {
+    public int getType() {
         return type;
     }
-    public void setType(Type type) {
+    public void setType(int type) {
         this.type = type;
     }
     public int getAge() {
@@ -81,10 +100,10 @@ public class Pet {
     public void setAge(int age) {
         this.age = age;
     }
-    public Sex getSex() {
+    public int getSex() {
         return sex;
     }
-    public void setSex(Sex sex) {
+    public void setSex(int sex) {
         this.sex = sex;
     }
     public String getDescription() {
@@ -106,47 +125,10 @@ public class Pet {
         this.image_url = image_url;
     }
 
-
-    public boolean validateFields() {
-        boolean isValid = true;
-
-        // TODO: This enum validation (and below on sex) is very brute force - FIX!
-        if (type != Type.BIRD && type != Type.CAT && type != Type.DOG && type != Type.FISH) {
-            LOG.warning("Type of pet is invalid");
-            isValid = false;
-        }
-        if (age < 0) {
-            LOG.warning("Age cannot be less than 0");
-            isValid = false;
-        }
-        if (sex != Sex.F && sex != Sex.M) {
-            LOG.warning("Sex must be either 'm' or 'f'");
-            isValid = false;
-        }
-        if (description == null || description.length() == 0) {
-            LOG.warning("Must include a description");
-            isValid = false;
-        }
-        if (owner_email == null || owner_email.length() == 0 && owner_email.matches("^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$")) {
-            LOG.warning("Must include owner email");
-            isValid = false;
-        }
-        if (image_url == null || image_url.length() == 0) {
-            LOG.warning("Must include image url");
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
     @Override
     public String toString() {
         return "Pet [id=" + id + ", name=" + name + ", type=" + type + ", age=" + age + ", sex=" + sex
                 + ", description=" + description + ", owner_email=" + owner_email + ", image_url=" + image_url + "]";
     }
-
-
-
-
 
 }
