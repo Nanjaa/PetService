@@ -95,10 +95,24 @@ public class PetService {
         return updatedPets;
     }
 
-    public boolean deletePets(List<Long> ids) {
-       // TODO: Add error handling
+    public PetResponse deletePets(List<Long> ids) {
         Iterable<Pet> existing = petRepository.findAllById(ids);
+        Map<String, String> errors = new HashMap<String, String>();
+        Map<String, Object> responseBody = new HashMap<String, Object>();
+        List<Long> deleted = new ArrayList<Long>();
+        
+        for (Pet pet : existing) {
+            ids.remove(pet.getId());
+            deleted.add(pet.getId());
+        }
+        if (ids.size() > 0) {
+            ids.forEach((id) -> {
+                errors.put("ID: " + id.toString(), "Invalid id");
+            });
+        }
         petRepository.deleteAll(existing);
-        return true;
+        responseBody.put("deletedIds", deleted);
+        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
+        return response;
     }
 }

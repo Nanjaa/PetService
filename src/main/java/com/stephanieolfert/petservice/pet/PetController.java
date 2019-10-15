@@ -46,7 +46,7 @@ public class PetController {
     }
 
     @DeleteMapping("/pets")
-    public boolean deletePets(@RequestBody List<Long> petIds) {
+    public @ResponseBody PetResponse deletePets(@RequestBody List<Long> petIds) {
         return petService.deletePets(petIds);
     }
 
