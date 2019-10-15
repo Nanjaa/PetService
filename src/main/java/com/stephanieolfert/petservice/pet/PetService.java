@@ -1,7 +1,6 @@
 package com.stephanieolfert.petservice.pet;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.stephanieolfert.petservice.data.PetRepository;
+import com.stephanieolfert.petservice.util.PetsList;
 
 @Service
 public class PetService {
@@ -26,48 +26,71 @@ public class PetService {
         return pets;
     }
 
-//    public List<Long> createPets(Collection<Pet> pets) {
-//        List<Long> ids = new ArrayList<Long>();
-//        for (Pet pet : pets) {
-//            Pet savedPet = petRepository.save(pet);
-//            if (savedPet != null && savedPet.getId() > 0) {
-//                ids.add(savedPet.getId());
-//            } else {
-//                LOG.warning("Following pet could not be saved: ");
-//            }
-//        }
-//
-//        return ids;
-//    }
-    
-    public List<Long> createPets(Pet pet) {
+    public List<Long> createPets(PetsList pets) {
+        // TODO: Add error handling
         List<Long> ids = new ArrayList<Long>();
-        Pet savedPet = petRepository.save(pet);
-        if (savedPet != null && savedPet.getId() > 0) {
+        Iterable<Pet> savedPets = petRepository.saveAll(pets.getPets());
+        for (Pet savedPet : savedPets) {
             ids.add(savedPet.getId());
-        } else {
-            LOG.warning("Following pet could not be saved: ");
         }
 
         return ids;
     }
 
-    public List<Pet> updatePets(Collection<Pet> pets) {
+    public List<Pet> updatePets(PetsList pets) {
         List<Pet> updatedPets = new ArrayList<Pet>();
 
-        for (Pet pet : pets) {
-         // TODO: This is where we'll update them in the db
-            updatedPets.add(pet);
+        for (Pet pet : pets.getPets()) {
+            Pet existing = petRepository.findById(pet.getId()).get();
+            if(existing != null) {
+                // TODO: Add error handling
+                // TODO: Update this to use clone instead of manually copying object
+                Pet updated = new Pet(existing.getName(), existing.getType(), existing.getAge(), existing.getSex(), existing.getDescription(),
+                        existing.getOwner_email(), existing.getImage_url());
+                updated.setId(pet.getId());
+
+                // TODO: Make sure that these conditionals would actually work
+                if (!pet.getName().isEmpty()) {
+                    updated.setName(pet.getName());
+                }
+                if (pet.getType() > 0) {
+                    updated.setType(pet.getType());
+                }
+                if (pet.getAge() != 0) {
+                    updated.setAge(pet.getAge());
+                }
+                if (pet.getSex() != 0) {
+                    updated.setSex(pet.getSex());
+                }
+                if (!pet.getDescription().isEmpty()) {
+                    updated.setDescription(pet.getDescription());
+                }
+                if (!pet.getOwner_email().isEmpty()) {
+                    updated.setOwner_email(pet.getOwner_email());
+                }
+                if (!pet.getImage_url().isEmpty()) {
+                    updated.setImage_url(pet.getImage_url());
+                }
+                
+                if (existing.equals(updated)) {
+                    LOG.info("No changes made to pet - pet does not require update");
+                    // TODO: Flesh out this error handling 
+                } else {
+                    petRepository.save(updated);
+                }
+
+            } else {
+                // TODO: Return that this is an invalid pet
+            }
         }
 
         return updatedPets;
     }
 
-    public boolean deletePets() {
-        boolean deleted = false;
-
-        // TODO: this is where we'll delete it from the db
-
-        return deleted;
+    public boolean deletePets(List<Long> ids) {
+       // TODO: Add error handling
+        Iterable<Pet> existing = petRepository.findAllById(ids);
+        petRepository.deleteAll(existing);
+        return true;
     }
 }

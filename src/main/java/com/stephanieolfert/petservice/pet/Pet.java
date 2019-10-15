@@ -16,6 +16,8 @@ import javax.validation.constraints.PositiveOrZero;
 @Entity
 @Table(name = "pets")
 public class Pet {
+    
+    // TODO: Double check best practices for underscores - looks funny to have camel and underscores together such as getOwner_email
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

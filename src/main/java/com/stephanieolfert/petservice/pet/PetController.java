@@ -1,7 +1,8 @@
 package com.stephanieolfert.petservice.pet;
 
-import java.util.Collection;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.stephanieolfert.petservice.util.PetsList;
 
 @RestController
 public class PetController {
@@ -24,18 +27,18 @@ public class PetController {
     }
 
     @PostMapping("/pets")
-    public @ResponseBody List<Long> createPets(@RequestBody Pet pets) {
+    public @ResponseBody List<Long> createPets(@Valid @RequestBody PetsList pets) {
         return petService.createPets(pets);
     }
 
     @PutMapping("/pets")
-    public @ResponseBody List<Pet> updatePets(@RequestBody Collection<Pet> pets) {
+    public @ResponseBody List<Pet> updatePets(@Valid @RequestBody PetsList pets) {
         return petService.updatePets(pets);
     }
 
     @DeleteMapping("/pets")
-    public boolean deletePets(@RequestBody Collection<Long> petIds) {
-        return petService.deletePets();
+    public boolean deletePets(@RequestBody List<Long> petIds) {
+        return petService.deletePets(petIds);
     }
 
 }
