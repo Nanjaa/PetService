@@ -1,13 +1,18 @@
 package com.stephanieolfert.petservice.pet;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.stephanieolfert.petservice.data.PetRepository;
+import com.stephanieolfert.petservice.util.PetResponse;
 import com.stephanieolfert.petservice.util.PetsList;
 
 @Service
@@ -26,15 +31,18 @@ public class PetService {
         return pets;
     }
 
-    public List<Long> createPets(PetsList pets) {
-        // TODO: Add error handling
+    public PetResponse createPets(PetsList pets) {
         List<Long> ids = new ArrayList<Long>();
+        Map<String, Object> responseBody = new HashMap<String, Object>();
+        
         Iterable<Pet> savedPets = petRepository.saveAll(pets.getPets());
-        for (Pet savedPet : savedPets) {
-            ids.add(savedPet.getId());
-        }
+        savedPets.forEach((pet) -> {
+            ids.add(pet.getId());
+        });
+        responseBody.put("ids", ids);
 
-        return ids;
+        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, null, responseBody);
+        return response;
     }
 
     public List<Pet> updatePets(PetsList pets) {
