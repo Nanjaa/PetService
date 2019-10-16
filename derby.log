@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Tue Oct 15 20:29:28 PDT 2019:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-016d-d29d-00c4-000002188760 
-on database directory memory:C:\Users\Stephanie\Desktop\meredith-codetest\testdb with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@2626b418 
+Wed Oct 16 14:08:02 PDT 2019:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-016d-d666-2695-000005185880 
+on database directory memory:C:\Users\Stephanie\Desktop\meredith-codetest\testdb with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@4e0e2f2a 
 Loaded from file:/C:/Users/Stephanie/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
 java.vendor=Oracle Corporation
 java.runtime.version=12.0.2+10

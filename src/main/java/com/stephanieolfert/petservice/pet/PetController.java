@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.stephanieolfert.petservice.util.PetResponse;
 import com.stephanieolfert.petservice.util.PetList;
+import com.stephanieolfert.petservice.util.PetResponse;
 
 @RestController
 public class PetController {
@@ -30,9 +30,10 @@ public class PetController {
     @Autowired
     private PetService petService;
 
+    // TODO: requestbody not required doesn't work fully, fix
     @GetMapping("/pets")
-    public @ResponseBody List<Pet> searchPets() {
-        return petService.searchPets();
+    public @ResponseBody PetResponse searchPets(@RequestBody(required = false) PetWithOptional search) {
+        return petService.searchPets(search);
     }
 
     @PostMapping("/pets")
@@ -60,7 +61,7 @@ public class PetController {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        
+
         PetResponse response = new PetResponse(new Date(), HttpStatus.BAD_REQUEST, errors, null);
         return response;
     }

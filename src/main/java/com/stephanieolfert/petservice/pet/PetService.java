@@ -8,6 +8,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -18,8 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.stephanieolfert.petservice.data.PetRepository;
-import com.stephanieolfert.petservice.util.PetResponse;
 import com.stephanieolfert.petservice.util.PetList;
+import com.stephanieolfert.petservice.util.PetResponse;
 
 @Service
 public class PetService {
@@ -27,15 +33,63 @@ public class PetService {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     Validator validator = factory.getValidator();
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     private PetRepository petRepository;
 
-    public List<Pet> searchPets() {
+    public PetResponse searchPets(PetWithOptional search) {
 
-        // TODO: For now, just returning all - refine with specific search
         List<Pet> pets = new ArrayList<Pet>();
-        petRepository.findAll().forEach(pets::add);
-        return pets;
+
+        if (search == null) {
+            petRepository.findAll().forEach(pets::add);
+        } else {
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<Pet> query = builder.createQuery(Pet.class);
+            Root<Pet> r = query.from(Pet.class);
+
+            List<Predicate> predicates = new ArrayList<Predicate>();
+            if (search.getId() != null) {
+                predicates.add(builder.equal(r.get("id"), search.getId().get()));
+            }
+            if (search.getName() != null) {
+                predicates.add(builder.like(r.get("name"), search.getName().get()));
+            }
+            if (search.getType() != null) {
+                predicates.add(builder.equal(r.get("type"), search.getType().get()));
+            }
+            if (search.getAge() != null) {
+                predicates.add(builder.equal(r.get("age"), search.getAge().get()));
+            }
+            if (search.getSex() != null) {
+                predicates.add(builder.equal(r.get("sex"), search.getSex().get()));
+            }
+            if (search.getDescription() != null) {
+                predicates.add(builder.like(r.get("description"), search.getDescription().get()));
+            }
+            if (search.getOwner_email() != null) {
+                predicates.add(builder.like(r.get("owner_email"), search.getOwner_email().get()));
+            }
+            if (search.getImage_url() != null) {
+                predicates.add(builder.like(r.get("image_url"), search.getImage_url().get()));
+            }
+
+            if (predicates.size() > 0) {
+                query.where(predicates.toArray(new Predicate[predicates.size()]));
+                pets = entityManager.createQuery(query).getResultList();
+            } else {
+                // TODO: return that something went wrong with adding the where criteria
+            }
+        }
+
+        // TODO: Make sure there's a condition for if you're trying to search against
+        // empty data?
+        Map<String, Object> responseBody = new HashMap<String, Object>();
+        responseBody.put("pets", pets);
+        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, null, responseBody);
+        return response;
 
     } // searchPets();
 
