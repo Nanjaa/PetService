@@ -11,7 +11,7 @@
 	<groupId>com.stephanieolfert.petservice</groupId>
 	<artifactId>pets</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>thisisatest</name>
+	<name>Pet Service</name>
 	<description>Stephanie Forcier Pet Service API</description>
 
 	<properties>

@@ -6,8 +6,8 @@ import javax.validation.Valid;
 
 import com.stephanieolfert.petservice.pet.Pet;
 
-public class PetList {
-    
+public class CreateRequest {
+
     @Valid
     private List<Pet> pets;
 

@@ -2,7 +2,6 @@ package com.stephanieolfert.petservice.pet;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -21,8 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.stephanieolfert.petservice.util.PetList;
-import com.stephanieolfert.petservice.util.PetResponse;
+import com.stephanieolfert.petservice.util.CreateRequest;
+import com.stephanieolfert.petservice.util.DeleteRequest;
+import com.stephanieolfert.petservice.util.Response;
+import com.stephanieolfert.petservice.util.SearchRequest;
+import com.stephanieolfert.petservice.util.UpdateRequest;
 
 @RestController
 public class PetController {
@@ -31,29 +33,29 @@ public class PetController {
     private PetService petService;
 
     @GetMapping("/pets")
-    public @ResponseBody PetResponse searchPets(@RequestBody(required = false) OptionalFieldsPet search) {
-        return petService.searchPets(search);
+    public @ResponseBody Response searchPets(@RequestBody(required = false) SearchRequest search) {
+        return petService.searchPets(search != null ? search.getSearch() : null);
     }
 
     @PostMapping("/pets")
-    public @ResponseBody PetResponse createPets(@Valid @RequestBody PetList pets) {
-        return petService.createPets(pets);
+    public @ResponseBody Response createPets(@Valid @RequestBody CreateRequest pets) {
+        return petService.createPets(pets.getPets());
     }
 
     @PutMapping("/pets")
-    public @ResponseBody PetResponse updatePets(@RequestBody List<OptionalFieldsPet> pets) {
-        return petService.updatePets(pets);
+    public @ResponseBody Response updatePets(@RequestBody UpdateRequest pets) {
+        return petService.updatePets(pets.getPets());
     }
 
     @DeleteMapping("/pets")
-    public @ResponseBody PetResponse deletePets(@RequestBody List<Long> petIds) {
-        return petService.deletePets(petIds);
+    public @ResponseBody Response deletePets(@RequestBody DeleteRequest petIds) {
+        return petService.deletePets(petIds.getIds());
     }
 
     // Exception Handlers
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public PetResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public Response handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<String, String>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -61,7 +63,7 @@ public class PetController {
             errors.put(fieldName, errorMessage);
         });
 
-        PetResponse response = new PetResponse(new Date(), HttpStatus.BAD_REQUEST, errors, null);
+        Response response = new Response(new Date(), HttpStatus.BAD_REQUEST, errors, null);
         return response;
     }
 

@@ -24,8 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.stephanieolfert.petservice.data.PetRepository;
-import com.stephanieolfert.petservice.util.PetList;
-import com.stephanieolfert.petservice.util.PetResponse;
+import com.stephanieolfert.petservice.util.Response;
 
 @Service
 public class PetService {
@@ -39,7 +38,7 @@ public class PetService {
     @Autowired
     private PetRepository petRepository;
 
-    public PetResponse searchPets(OptionalFieldsPet search) {
+    public Response searchPets(OptionalFieldsPet search) {
 
         List<Pet> pets = new ArrayList<Pet>();
         Map<String, String> errors = new HashMap<String, String>();
@@ -90,28 +89,28 @@ public class PetService {
 
         Map<String, Object> responseBody = new HashMap<String, Object>();
         responseBody.put("pets", pets);
-        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
+        Response response = new Response(new Date(), HttpStatus.OK, errors, responseBody);
         return response;
 
     } // searchPets();
 
-    public PetResponse createPets(PetList pets) {
+    public Response createPets(List<Pet> pets) {
 
         List<Long> ids = new ArrayList<Long>();
         Map<String, Object> responseBody = new HashMap<String, Object>();
 
-        Iterable<Pet> savedPets = petRepository.saveAll(pets.getPets());
+        Iterable<Pet> savedPets = petRepository.saveAll(pets);
         savedPets.forEach((pet) -> {
             ids.add(pet.getId());
         });
         responseBody.put("ids", ids);
 
-        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, null, responseBody);
+        Response response = new Response(new Date(), HttpStatus.OK, null, responseBody);
         return response;
 
     } // createPets();
 
-    public PetResponse updatePets(List<OptionalFieldsPet> pets) {
+    public Response updatePets(List<OptionalFieldsPet> pets) {
 
         List<Pet> updatedPets = new ArrayList<Pet>();
         Map<String, String> errors = new HashMap<String, String>();
@@ -159,12 +158,12 @@ public class PetService {
 
         Map<String, Object> responseBody = new HashMap<String, Object>();
         responseBody.put("updatedPets", updatedPets);
-        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
+        Response response = new Response(new Date(), HttpStatus.OK, errors, responseBody);
         return response;
 
     } // updatePets();
 
-    public PetResponse deletePets(List<Long> ids) {
+    public Response deletePets(List<Long> ids) {
 
         Iterable<Pet> existing = petRepository.findAllById(ids);
         Map<String, String> errors = new HashMap<String, String>();
@@ -182,7 +181,7 @@ public class PetService {
         }
         petRepository.deleteAll(existing);
         responseBody.put("deletedIds", deleted);
-        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
+        Response response = new Response(new Date(), HttpStatus.OK, errors, responseBody);
         return response;
 
     } // deletePets();

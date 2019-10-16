@@ -5,13 +5,13 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 
-public class PetResponse {
+public class Response {
     private final Date timestamp;
     private final HttpStatus status;
     private final Map<String, String> errors;
     private final Map<String, Object> response;
     
-    public PetResponse(Date timestamp, HttpStatus status, Map<String, String> errors, Map<String, Object> response) {
+    public Response(Date timestamp, HttpStatus status, Map<String, String> errors, Map<String, Object> response) {
         super();
         this.timestamp = timestamp;
         this.status = status;
