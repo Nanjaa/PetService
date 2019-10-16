@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stephanieolfert.petservice.util.PetResponse;
-import com.stephanieolfert.petservice.util.PetsList;
+import com.stephanieolfert.petservice.util.PetList;
 
 @RestController
 public class PetController {
@@ -36,12 +36,12 @@ public class PetController {
     }
 
     @PostMapping("/pets")
-    public @ResponseBody PetResponse createPets(@Valid @RequestBody PetsList pets) {
+    public @ResponseBody PetResponse createPets(@Valid @RequestBody PetList pets) {
         return petService.createPets(pets);
     }
 
     @PutMapping("/pets")
-    public @ResponseBody PetResponse updatePets(@RequestBody PetsList pets) {
+    public @ResponseBody PetResponse updatePets(@RequestBody PetList pets) {
         return petService.updatePets(pets);
     }
 

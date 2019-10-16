@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -20,15 +19,13 @@ import org.springframework.stereotype.Service;
 
 import com.stephanieolfert.petservice.data.PetRepository;
 import com.stephanieolfert.petservice.util.PetResponse;
-import com.stephanieolfert.petservice.util.PetsList;
+import com.stephanieolfert.petservice.util.PetList;
 
 @Service
 public class PetService {
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     Validator validator = factory.getValidator();
-
-    private static final Logger LOG = Logger.getLogger(PetService.class.getName());
 
     @Autowired
     private PetRepository petRepository;
@@ -42,7 +39,7 @@ public class PetService {
 
     } // searchPets();
 
-    public PetResponse createPets(PetsList pets) {
+    public PetResponse createPets(PetList pets) {
 
         List<Long> ids = new ArrayList<Long>();
         Map<String, Object> responseBody = new HashMap<String, Object>();
@@ -58,7 +55,7 @@ public class PetService {
 
     } // createPets();
 
-    public PetResponse updatePets(PetsList pets) {
+    public PetResponse updatePets(PetList pets) {
 
         List<Pet> updatedPets = new ArrayList<Pet>();
         Map<String, String> errors = new HashMap<String, String>();
