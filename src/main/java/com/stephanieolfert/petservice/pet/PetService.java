@@ -111,31 +111,33 @@ public class PetService {
 
     } // createPets();
 
-    // TODO: Switch this to use the new PetWithOptionals instead!
-    public PetResponse updatePets(PetList pets) {
+    public PetResponse updatePets(List<OptionalFieldsPet> pets) {
 
         List<Pet> updatedPets = new ArrayList<Pet>();
         Map<String, String> errors = new HashMap<String, String>();
 
-        for (Pet pet : pets.getPets()) {
-            Optional<Pet> fromDb = petRepository.findById(pet.getId());
+        for (OptionalFieldsPet pet : pets) {
+            if (pet.getId() == null) {
+                errors.put(pet.toString(), "ID required to update pet");
+                continue;
+            }
+
+            Long id = pet.getId().get();
+            Optional<Pet> fromDb = petRepository.findById(id);
             if (fromDb.isPresent()) {
                 Pet existing = fromDb.get();
                 Pet updated = new Pet();
 
-                updated.setId(pet.getId());
-                updated.setName(pet.getName() != null && !pet.getName().isEmpty() ? pet.getName() : existing.getName());
-                updated.setType(pet.getType() != 0 ? pet.getType() : existing.getType());
-                updated.setAge(pet.getAge() != existing.getAge() ? pet.getAge() : existing.getAge());
-                updated.setSex(pet.getSex() != 0 ? pet.getSex() : existing.getSex());
+                updated.setId(id);
+                updated.setName(pet.getName() != null ? pet.getName().get() : existing.getName());
+                updated.setType(pet.getType() != null ? pet.getType().get() : existing.getType());
+                updated.setAge(pet.getAge() != null ? pet.getAge().get() : existing.getAge());
+                updated.setSex(pet.getSex() != null ? pet.getSex().get() : existing.getSex());
                 updated.setDescription(
-                        pet.getDescription() != null && !pet.getDescription().isEmpty() ? pet.getDescription()
-                                : existing.getDescription());
+                        pet.getDescription() != null ? pet.getDescription().get() : existing.getDescription());
                 updated.setOwner_email(
-                        pet.getOwner_email() != null && !pet.getOwner_email().isEmpty() ? pet.getOwner_email()
-                                : existing.getOwner_email());
-                updated.setImage_url(pet.getImage_url() != null && !pet.getImage_url().isEmpty() ? pet.getImage_url()
-                        : existing.getImage_url());
+                        pet.getOwner_email() != null ? pet.getOwner_email().get() : existing.getOwner_email());
+                updated.setImage_url(pet.getImage_url() != null ? pet.getImage_url().get() : existing.getImage_url());
 
                 Set<ConstraintViolation<Pet>> constraintViolations = validator.validate(updated);
                 if (constraintViolations.size() > 0) {

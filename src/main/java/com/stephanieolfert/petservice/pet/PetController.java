@@ -41,7 +41,7 @@ public class PetController {
     }
 
     @PutMapping("/pets")
-    public @ResponseBody PetResponse updatePets(@RequestBody PetList pets) {
+    public @ResponseBody PetResponse updatePets(@RequestBody List<OptionalFieldsPet> pets) {
         return petService.updatePets(pets);
     }
 
