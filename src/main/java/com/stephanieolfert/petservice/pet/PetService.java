@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +24,21 @@ public class PetService {
     @Autowired
     private PetRepository petRepository;
 
-    
+
     public List<Pet> searchPets() {
+
         // TODO: For now, just returning all - refine with specific search
         List<Pet> pets = new ArrayList<Pet>();
         petRepository.findAll().forEach(pets::add);
         return pets;
-    }
+
+    } // searchPets();
 
     public PetResponse createPets(PetsList pets) {
+
         List<Long> ids = new ArrayList<Long>();
         Map<String, Object> responseBody = new HashMap<String, Object>();
-        
+
         Iterable<Pet> savedPets = petRepository.saveAll(pets.getPets());
         savedPets.forEach((pet) -> {
             ids.add(pet.getId());
@@ -43,64 +47,67 @@ public class PetService {
 
         PetResponse response = new PetResponse(new Date(), HttpStatus.OK, null, responseBody);
         return response;
-    }
 
-    public List<Pet> updatePets(PetsList pets) {
+    } // createPets();
+
+    public PetResponse updatePets(PetsList pets) {
+
         List<Pet> updatedPets = new ArrayList<Pet>();
+        List<Long> invalidIds = new ArrayList<Long>();
+        List<Long> noUpdateRequired = new ArrayList<Long>();
 
         for (Pet pet : pets.getPets()) {
-            Pet existing = petRepository.findById(pet.getId()).get();
-            if(existing != null) {
-                // TODO: Add error handling
-                // TODO: Update this to use clone instead of manually copying object
-                Pet updated = new Pet(existing.getName(), existing.getType(), existing.getAge(), existing.getSex(), existing.getDescription(),
-                        existing.getOwner_email(), existing.getImage_url());
-                updated.setId(pet.getId());
+            Optional<Pet> fromDb = petRepository.findById(pet.getId());
+            if(fromDb.isPresent()) {
+                Pet existing = fromDb.get();
+                Pet updated = new Pet();
 
-                // TODO: Make sure that these conditionals would actually work
-                if (!pet.getName().isEmpty()) {
-                    updated.setName(pet.getName());
-                }
-                if (pet.getType() > 0) {
-                    updated.setType(pet.getType());
-                }
-                if (pet.getAge() != 0) {
-                    updated.setAge(pet.getAge());
-                }
-                if (pet.getSex() != 0) {
-                    updated.setSex(pet.getSex());
-                }
-                if (!pet.getDescription().isEmpty()) {
-                    updated.setDescription(pet.getDescription());
-                }
-                if (!pet.getOwner_email().isEmpty()) {
-                    updated.setOwner_email(pet.getOwner_email());
-                }
-                if (!pet.getImage_url().isEmpty()) {
-                    updated.setImage_url(pet.getImage_url());
-                }
-                
+                updated.setId(pet.getId());
+                updated.setName(pet.getName() != null ? pet.getName() : existing.getName());
+                updated.setType(pet.getType() != 0 ? pet.getType() : existing.getType());
+                updated.setAge(pet.getAge() != existing.getAge() ? pet.getAge() : existing.getAge());
+                updated.setSex(pet.getSex() != 0 ? pet.getSex() : existing.getSex());
+                updated.setDescription(pet.getDescription() != null ? pet.getDescription() : existing.getDescription());
+                updated.setOwner_email(pet.getOwner_email() != null ? pet.getOwner_email() : existing.getOwner_email());
+                updated.setImage_url(pet.getImage_url() != null ? pet.getImage_url() : existing.getImage_url());
+
                 if (existing.equals(updated)) {
-                    LOG.info("No changes made to pet - pet does not require update");
-                    // TODO: Flesh out this error handling 
+                    noUpdateRequired.add(pet.getId());
                 } else {
                     petRepository.save(updated);
+                    updatedPets.add(updated);
                 }
-
             } else {
-                // TODO: Return that this is an invalid pet
+                invalidIds.add(pet.getId());
             }
         }
 
-        return updatedPets;
-    }
+        Map<String, Object> responseBody = new HashMap<String, Object>();
+        responseBody.put("updatedPets", updatedPets);
+        Map<String, String> errors = new HashMap<String, String>();
+        if (invalidIds.size() > 0) {
+            invalidIds.forEach((id) -> {
+                errors.put("ID: " + id, "Invalid id");
+            });
+        }
+        if (noUpdateRequired.size() > 0) {
+            noUpdateRequired.forEach((id) -> {
+                errors.put("ID: " + id, "No changes made to pet, no update required");
+            });
+        }
+
+        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
+        return response;
+
+    } // updatePets();
 
     public PetResponse deletePets(List<Long> ids) {
+
         Iterable<Pet> existing = petRepository.findAllById(ids);
         Map<String, String> errors = new HashMap<String, String>();
         Map<String, Object> responseBody = new HashMap<String, Object>();
         List<Long> deleted = new ArrayList<Long>();
-        
+
         for (Pet pet : existing) {
             ids.remove(pet.getId());
             deleted.add(pet.getId());
@@ -114,5 +121,6 @@ public class PetService {
         responseBody.put("deletedIds", deleted);
         PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
         return response;
-    }
+
+    } // deletePets();
 }
