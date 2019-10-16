@@ -30,9 +30,8 @@ public class PetController {
     @Autowired
     private PetService petService;
 
-    // TODO: requestbody not required doesn't work fully, fix
     @GetMapping("/pets")
-    public @ResponseBody PetResponse searchPets(@RequestBody(required = false) PetWithOptional search) {
+    public @ResponseBody PetResponse searchPets(@RequestBody(required = false) OptionalFieldsPet search) {
         return petService.searchPets(search);
     }
 

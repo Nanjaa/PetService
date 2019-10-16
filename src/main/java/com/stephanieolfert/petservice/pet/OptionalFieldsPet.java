@@ -2,7 +2,7 @@ package com.stephanieolfert.petservice.pet;
 
 import java.util.Optional;
 
-public class PetWithOptional {
+public class OptionalFieldsPet {
 
     private Optional<Long> id;
     private Optional<String> name;

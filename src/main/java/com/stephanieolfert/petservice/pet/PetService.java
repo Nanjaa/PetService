@@ -39,9 +39,10 @@ public class PetService {
     @Autowired
     private PetRepository petRepository;
 
-    public PetResponse searchPets(PetWithOptional search) {
+    public PetResponse searchPets(OptionalFieldsPet search) {
 
         List<Pet> pets = new ArrayList<Pet>();
+        Map<String, String> errors = new HashMap<String, String>();
 
         if (search == null) {
             petRepository.findAll().forEach(pets::add);
@@ -55,7 +56,7 @@ public class PetService {
                 predicates.add(builder.equal(r.get("id"), search.getId().get()));
             }
             if (search.getName() != null) {
-                predicates.add(builder.like(r.get("name"), search.getName().get()));
+                predicates.add(builder.like(builder.lower(r.get("name")), search.getName().get().toLowerCase()));
             }
             if (search.getType() != null) {
                 predicates.add(builder.equal(r.get("type"), search.getType().get()));
@@ -67,28 +68,29 @@ public class PetService {
                 predicates.add(builder.equal(r.get("sex"), search.getSex().get()));
             }
             if (search.getDescription() != null) {
-                predicates.add(builder.like(r.get("description"), search.getDescription().get()));
+                predicates.add(
+                        builder.like(builder.lower(r.get("description")), search.getDescription().get().toLowerCase()));
             }
             if (search.getOwner_email() != null) {
-                predicates.add(builder.like(r.get("owner_email"), search.getOwner_email().get()));
+                predicates.add(
+                        builder.like(builder.lower(r.get("owner_email")), search.getOwner_email().get().toLowerCase()));
             }
             if (search.getImage_url() != null) {
-                predicates.add(builder.like(r.get("image_url"), search.getImage_url().get()));
+                predicates.add(
+                        builder.like(builder.lower(r.get("image_url")), search.getImage_url().get().toLowerCase()));
             }
 
             if (predicates.size() > 0) {
                 query.where(predicates.toArray(new Predicate[predicates.size()]));
                 pets = entityManager.createQuery(query).getResultList();
             } else {
-                // TODO: return that something went wrong with adding the where criteria
+                errors.put(search.toString(), "Search query passed without criteria");
             }
         }
 
-        // TODO: Make sure there's a condition for if you're trying to search against
-        // empty data?
         Map<String, Object> responseBody = new HashMap<String, Object>();
         responseBody.put("pets", pets);
-        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, null, responseBody);
+        PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
         return response;
 
     } // searchPets();
@@ -109,6 +111,7 @@ public class PetService {
 
     } // createPets();
 
+    // TODO: Switch this to use the new PetWithOptionals instead!
     public PetResponse updatePets(PetList pets) {
 
         List<Pet> updatedPets = new ArrayList<Pet>();
