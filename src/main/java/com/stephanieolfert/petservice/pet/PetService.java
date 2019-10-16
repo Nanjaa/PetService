@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,12 +13,12 @@ import org.springframework.stereotype.Service;
 
 import com.stephanieolfert.petservice.data.PetRepository;
 import com.stephanieolfert.petservice.util.PetResponse;
-import com.stephanieolfert.petservice.util.PetsList;
+import com.stephanieolfert.petservice.util.PetList;
+import com.stephanieolfert.petservice.util.PetOptional;
+import com.stephanieolfert.petservice.util.PetOptionalList;
 
 @Service
 public class PetService {
-
-    private static final Logger LOG = Logger.getLogger( PetService.class.getName() );
 
     @Autowired
     private PetRepository petRepository;
@@ -34,7 +33,7 @@ public class PetService {
 
     } // searchPets();
 
-    public PetResponse createPets(PetsList pets) {
+    public PetResponse createPets(PetList pets) {
 
         List<Long> ids = new ArrayList<Long>();
         Map<String, Object> responseBody = new HashMap<String, Object>();
@@ -50,26 +49,26 @@ public class PetService {
 
     } // createPets();
 
-    public PetResponse updatePets(PetsList pets) {
+    public PetResponse updatePets(PetOptionalList pets) {
 
         List<Pet> updatedPets = new ArrayList<Pet>();
         List<Long> invalidIds = new ArrayList<Long>();
         List<Long> noUpdateRequired = new ArrayList<Long>();
 
-        for (Pet pet : pets.getPets()) {
+        for (PetOptional pet : pets.getPets()) {
             Optional<Pet> fromDb = petRepository.findById(pet.getId());
             if(fromDb.isPresent()) {
                 Pet existing = fromDb.get();
                 Pet updated = new Pet();
 
-                updated.setId(pet.getId());
-                updated.setName(pet.getName() != null ? pet.getName() : existing.getName());
-                updated.setType(pet.getType() != 0 ? pet.getType() : existing.getType());
-                updated.setAge(pet.getAge() != existing.getAge() ? pet.getAge() : existing.getAge());
-                updated.setSex(pet.getSex() != 0 ? pet.getSex() : existing.getSex());
-                updated.setDescription(pet.getDescription() != null ? pet.getDescription() : existing.getDescription());
-                updated.setOwner_email(pet.getOwner_email() != null ? pet.getOwner_email() : existing.getOwner_email());
-                updated.setImage_url(pet.getImage_url() != null ? pet.getImage_url() : existing.getImage_url());
+//                updated.setId(pet.getId());
+//                updated.setName(pet.getName() != null ? pet.getName() : existing.getName());
+//                updated.setType(pet.getType() != 0 ? pet.getType() : existing.getType());
+//                updated.setAge(pet.getAge() != existing.getAge() ? pet.getAge() : existing.getAge());
+//                updated.setSex(pet.getSex() != 0 ? pet.getSex() : existing.getSex());
+//                updated.setDescription(pet.getDescription() != null ? pet.getDescription() : existing.getDescription());
+//                updated.setOwner_email(pet.getOwner_email() != null ? pet.getOwner_email() : existing.getOwner_email());
+//                updated.setImage_url(pet.getImage_url() != null ? pet.getImage_url() : existing.getImage_url());
 
                 if (existing.equals(updated)) {
                     noUpdateRequired.add(pet.getId());

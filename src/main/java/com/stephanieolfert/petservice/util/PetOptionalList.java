@@ -4,24 +4,22 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import com.stephanieolfert.petservice.pet.Pet;
+public class PetOptionalList {
 
-public class PetsList {
-    
     @Valid
-    private List<Pet> pets;
+    private List<PetOptional> pets;
 
-    public List<Pet> getPets() {
+    public List<PetOptional> getPets() {
         return pets;
     }
 
-    public void setPets(List<Pet> pets) {
+    public void setPets(List<PetOptional> pets) {
         this.pets = pets;
     }
 
     @Override
     public String toString() {
-        return "PetsList [pets=" + pets + "]";
+        return "PetOptionalList [pets=" + pets + "]";
     }
 
 }
