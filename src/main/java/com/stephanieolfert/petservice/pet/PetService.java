@@ -6,7 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,11 +25,13 @@ import com.stephanieolfert.petservice.util.PetsList;
 @Service
 public class PetService {
 
-    private static final Logger LOG = Logger.getLogger( PetService.class.getName() );
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    Validator validator = factory.getValidator();
+
+    private static final Logger LOG = Logger.getLogger(PetService.class.getName());
 
     @Autowired
     private PetRepository petRepository;
-
 
     public List<Pet> searchPets() {
 
@@ -53,49 +61,48 @@ public class PetService {
     public PetResponse updatePets(PetsList pets) {
 
         List<Pet> updatedPets = new ArrayList<Pet>();
-        List<Long> invalidIds = new ArrayList<Long>();
-        List<Long> noUpdateRequired = new ArrayList<Long>();
+        Map<String, String> errors = new HashMap<String, String>();
 
         for (Pet pet : pets.getPets()) {
             Optional<Pet> fromDb = petRepository.findById(pet.getId());
-            if(fromDb.isPresent()) {
+            if (fromDb.isPresent()) {
                 Pet existing = fromDb.get();
                 Pet updated = new Pet();
 
                 updated.setId(pet.getId());
-                updated.setName(pet.getName() != null ? pet.getName() : existing.getName());
+                updated.setName(pet.getName() != null && !pet.getName().isEmpty() ? pet.getName() : existing.getName());
                 updated.setType(pet.getType() != 0 ? pet.getType() : existing.getType());
                 updated.setAge(pet.getAge() != existing.getAge() ? pet.getAge() : existing.getAge());
                 updated.setSex(pet.getSex() != 0 ? pet.getSex() : existing.getSex());
-                updated.setDescription(pet.getDescription() != null ? pet.getDescription() : existing.getDescription());
-                updated.setOwner_email(pet.getOwner_email() != null ? pet.getOwner_email() : existing.getOwner_email());
-                updated.setImage_url(pet.getImage_url() != null ? pet.getImage_url() : existing.getImage_url());
+                updated.setDescription(
+                        pet.getDescription() != null && !pet.getDescription().isEmpty() ? pet.getDescription()
+                                : existing.getDescription());
+                updated.setOwner_email(
+                        pet.getOwner_email() != null && !pet.getOwner_email().isEmpty() ? pet.getOwner_email()
+                                : existing.getOwner_email());
+                updated.setImage_url(pet.getImage_url() != null && !pet.getImage_url().isEmpty() ? pet.getImage_url()
+                        : existing.getImage_url());
 
-                if (existing.equals(updated)) {
-                    noUpdateRequired.add(pet.getId());
+                Set<ConstraintViolation<Pet>> constraintViolations = validator.validate(updated);
+                if (constraintViolations.size() > 0) {
+                    for (ConstraintViolation<Pet> violation : constraintViolations) {
+                        errors.put(pet.toString(), violation.getMessage());
+                    }
                 } else {
-                    petRepository.save(updated);
-                    updatedPets.add(updated);
+                    if (existing.equals(updated)) {
+                        errors.put(pet.toString(), "No changes made to pet, no update required");
+                    } else {
+                        petRepository.save(updated);
+                        updatedPets.add(updated);
+                    }
                 }
             } else {
-                invalidIds.add(pet.getId());
+                errors.put(pet.toString(), "Invalid id");
             }
         }
 
         Map<String, Object> responseBody = new HashMap<String, Object>();
         responseBody.put("updatedPets", updatedPets);
-        Map<String, String> errors = new HashMap<String, String>();
-        if (invalidIds.size() > 0) {
-            invalidIds.forEach((id) -> {
-                errors.put("ID: " + id, "Invalid id");
-            });
-        }
-        if (noUpdateRequired.size() > 0) {
-            noUpdateRequired.forEach((id) -> {
-                errors.put("ID: " + id, "No changes made to pet, no update required");
-            });
-        }
-
         PetResponse response = new PetResponse(new Date(), HttpStatus.OK, errors, responseBody);
         return response;
 
