@@ -47,7 +47,7 @@ public class TestUtils {
     }
 
     public static Pet newBird() {
-        return new Pet("birdy", Pet.TYPE_BIRD, 3, Pet.SEX_M, "The cutest cat ever!", "stephanie.r.olfert@gmail.com",
+        return new Pet("birdy", Pet.TYPE_BIRD, 3, Pet.SEX_M, "The cutest bird ever!", "stephanie.r.olfert@gmail.com",
                 "http://stephanieolfert.com/testimg.png");
     }
 

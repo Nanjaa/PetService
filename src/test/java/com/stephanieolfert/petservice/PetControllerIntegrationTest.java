@@ -4,14 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +31,6 @@ import com.stephanieolfert.petservice.data.PetRepository;
 import com.stephanieolfert.petservice.pet.Pet;
 import com.stephanieolfert.petservice.util.CreateRequest;
 import com.stephanieolfert.petservice.util.Response;
-import com.stephanieolfert.petservice.util.SearchRequest;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -91,6 +93,8 @@ public class PetControllerIntegrationTest {
         assertThat(content, containsString("pets[5].owner_email\":\"Email must be a valid format"));
         assertThat(content, containsString("pets[6].image_url\":\"Image URL must be a valid format"));
 
+        petRepository.deleteAll();
+
     } // whenInvalidInput_thenThrowErrorOnCreate
 
     @Test
@@ -99,23 +103,7 @@ public class PetControllerIntegrationTest {
         List<Pet> pets = TestUtils.newValidPetList();
         petRepository.saveAll(pets);
 
-        SearchRequest search = new SearchRequest();
-
-        MvcResult result = this.mockMvc
-                .perform(get("/pets").contentType(MediaType.APPLICATION_JSON).content(TestUtils.toJson(search)))
-                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        Response response = objectMapper.readValue(result.getResponse().getContentAsString(), Response.class);
-        assertNotNull(response);
-        assertNotNull(response.getResponse());
-
-        List<Object> objects = (List<Object>) response.getResponse().get("pets");
-        List<Pet> found = new ArrayList<Pet>();
-        objects.forEach((object) -> {
-            ObjectMapper mapper = new ObjectMapper();
-            found.add(mapper.convertValue(object, Pet.class));
-        });
+        List<Pet> found = searchResults("");
         assertThat(found).hasSize(4);
 
         int count = 0;
@@ -171,10 +159,105 @@ public class PetControllerIntegrationTest {
         petRepository.deleteAll();
     } // whenSearchInput_thenSearchPets();
 
-    // TODO: GET pets with params - include 1 with no id, 1 with results, and 1 with
-    // empty search criteria
-    // TODO: PUT pets with no invalid
-    // TODO: PUT pets with invalid
+    @Test
+    public void whenMissingId_thenDontUpdate() throws Exception {
+
+        List<Pet> pets = TestUtils.newValidPetList();
+        petRepository.saveAll(pets);
+
+        String json = "{\"pets\": [{ \"name\": \"Ducky\"}]}";
+
+        MvcResult result = this.mockMvc
+                .perform(put("/pets").contentType(MediaType.APPLICATION_JSON).content(json.getBytes()))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertNotNull(content);
+        assertThat(content, containsString("ID required to update pet"));
+
+        Response response = objectMapper.readValue(content, Response.class);
+        assertNotNull(response);
+        assertNotNull(response.getResponse());
+
+        List<Object> objects = (List<Object>) response.getResponse().get("pets");
+        assertNull(objects);
+
+        petRepository.deleteAll();
+
+    } // whenMissingId_thenDontUpdate();
+
+    @Test
+    public void whenNoChanges_thenDontUpdate() throws Exception {
+
+        List<Pet> pets = TestUtils.newValidPetList();
+        petRepository.saveAll(pets);
+        Pet myCat = petRepository.save(TestUtils.newCat());
+
+        String json = "{\"pets\": [{" + "\"id\": \"" + myCat.getId() + "\", " + "\"name\": \"" + myCat.getName()
+                + "\", " + "\"type\": " + myCat.getType() + ", " + "\"age\": " + myCat.getAge() + ", " + "\"sex\": "
+                + myCat.getSex() + ", " + "\"description\": \"" + myCat.getDescription() + "\", "
+                + "\"owner_email\": \"" + myCat.getOwner_email() + "\", " + "\"image_url\": \"" + myCat.getImage_url()
+                + "\"}]}";
+
+        MvcResult result = this.mockMvc
+                .perform(put("/pets").contentType(MediaType.APPLICATION_JSON).content(json.getBytes()))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertNotNull(content);
+        assertThat(content, containsString("No changes made to pet, no update required"));
+
+        Response response = objectMapper.readValue(content, Response.class);
+        assertNotNull(response);
+        assertNotNull(response.getResponse());
+
+        List<Object> objects = (List<Object>) response.getResponse().get("pets");
+        assertNull(objects);
+
+        Optional<Pet> found = petRepository.findById(myCat.getId());
+        assertNotNull(found);
+        assertEquals(myCat, found.get());
+
+        petRepository.deleteAll();
+
+    } // whenNoChanges_thenDontUpdate();
+
+    @Test
+    public void whenInvalidField_thenDontUpdate() throws Exception {
+
+        List<Pet> pets = TestUtils.newValidPetList();
+        petRepository.saveAll(pets);
+        Pet myCat = petRepository.save(TestUtils.newCat());
+
+        String json = "{\"pets\": [{" + "\"id\": \"" + myCat.getId() + "\", " + "\"type\": 11 }]}";
+
+        MvcResult result = this.mockMvc
+                .perform(put("/pets").contentType(MediaType.APPLICATION_JSON).content(json.getBytes()))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertNotNull(content);
+        assertThat(content, containsString("Not a valid type"));
+
+        Response response = objectMapper.readValue(content, Response.class);
+        assertNotNull(response);
+        assertNotNull(response.getResponse());
+
+        List<Object> objects = (List<Object>) response.getResponse().get("pets");
+        assertNull(objects);
+
+        Optional<Pet> found = petRepository.findById(myCat.getId());
+        assertNotNull(found);
+        assertEquals(myCat, found.get());
+
+        petRepository.deleteAll();
+
+    } // whenInvalidField_thenDontUpdate();
+
+    // TODO: PUT - no id, no changes, invalid no change, valid change
     // TODO: DELETE pets
 
     private List<Pet> searchResults(String json) throws Exception {
@@ -198,6 +281,7 @@ public class PetControllerIntegrationTest {
         return found;
     }
 
+    // TODO: OOPS! This is flipped. it's usually (expected, actual). Fix!
     private void testFields(Pet actual, Pet expected) {
         assertNotNull(actual);
 
