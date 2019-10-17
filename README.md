@@ -20,10 +20,10 @@ This is a REST API that handles a database of pets. It is written in Java using 
 
 * The server is located at http://localhost:8080
 * Headers should be:
-* Accept: application/json
-* Content-Type: application/json
+  * Accept: application/json
+  * Content-Type: application/json
 
-##Create
+## Create
 * Request Method: **POST**
 * Endpoint: **/pets**
 * Accepts a list of pets (format below)
@@ -44,7 +44,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
 ]}
 ```
 
-##Update
+## Update
 * Request Method: **PUT**
 * Endpoint: **/pets**
 * Accepts a list of pets (format below)
@@ -66,7 +66,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
 ]}
 ```
 
-##Delete
+## Delete
 * Request Method: **DELETE**
 * Endpoint: **/pets**
 * Accepts a list of ids (format below)
@@ -77,7 +77,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
 { "ids": []}
 ```
 
-##Search
+## Search
 * Request Method: **GET**
 * Endpoint: **/pets**
 * Accepts a single search criteria object (optional)
