@@ -39,7 +39,7 @@ import com.stephanieolfert.petservice.util.Response;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class PetControllerIntegrationTest {
+public class PetServiceUnitTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,32 +49,6 @@ public class PetControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Test
-    public void whenValidInput_thenCreatePets() throws Exception {
-
-        List<Pet> pets = TestUtils.newValidPetList();
-        CreateRequest create = new CreateRequest();
-        create.setPets(pets);
-
-        this.mockMvc.perform(post("/pets").contentType(MediaType.APPLICATION_JSON).content(TestUtils.toJson(create)))
-                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-
-        Iterable<Pet> found = petRepository.findAll();
-        assertNotNull(found);
-        assertThat(found).isNotEmpty();
-        assertThat(found).hasSize(4);
-
-        int count = 0;
-
-        for (Pet foundPet : found) {
-            testFields(foundPet, pets.get(count));
-            count++;
-        }
-
-        petRepository.deleteAll();
-
-    } // whenValidInput_thenCreatePets()
 
     @Test
     public void whenInvalidInput_thenThrowErrorOnCreate() throws Exception {
@@ -102,6 +76,32 @@ public class PetControllerIntegrationTest {
     } // whenInvalidInput_thenThrowErrorOnCreate
 
     @Test
+    public void whenValidInput_thenCreatePets() throws Exception {
+
+        List<Pet> pets = TestUtils.newValidPetList();
+        CreateRequest create = new CreateRequest();
+        create.setPets(pets);
+
+        this.mockMvc.perform(post("/pets").contentType(MediaType.APPLICATION_JSON).content(TestUtils.toJson(create)))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        Iterable<Pet> found = petRepository.findAll();
+        assertNotNull(found);
+        assertThat(found).isNotEmpty();
+        assertThat(found).hasSize(4);
+
+        int count = 0;
+
+        for (Pet foundPet : found) {
+            testFields(pets.get(count), foundPet);
+            count++;
+        }
+
+        petRepository.deleteAll();
+
+    } // whenValidInput_thenCreatePets()
+
+    @Test
     public void whenNoInput_thenGetAllPets() throws Exception {
 
         List<Pet> pets = TestUtils.newValidPetList();
@@ -112,7 +112,7 @@ public class PetControllerIntegrationTest {
 
         int count = 0;
         for (Pet foundPet : found) {
-            testFields(foundPet, pets.get(count));
+            testFields(pets.get(count), foundPet);
             count++;
         }
 
@@ -133,7 +133,7 @@ public class PetControllerIntegrationTest {
         // id
         List<Pet> found = searchResults("{\"search\": { \"id\": \"" + myCat.getId() + "\"}}");
         assertThat(found).hasSize(1);
-        testFields(found.get(0), myCat);
+        testFields(myCat, found.get(0));
         // name
         found = searchResults("{\"search\": { \"name\": \"" + myDog.getName() + "\"}}");
         assertThat(found).hasSize(2);
@@ -184,6 +184,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("pets");
         assertNull(objects);
 
@@ -217,6 +218,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("pets");
         assertNull(objects);
 
@@ -250,6 +252,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("pets");
         assertNull(objects);
 
@@ -293,6 +296,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("updatedPets");
         List<Pet> updatedPets = new ArrayList<Pet>();
         objects.forEach((object) -> {
@@ -334,6 +338,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("deletedIds");
         assertTrue(objects.isEmpty());
 
@@ -363,6 +368,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("deletedIds");
         assertFalse(objects.isEmpty());
         Long objectId = Long.parseLong(objects.get(0).toString());
@@ -383,6 +389,7 @@ public class PetControllerIntegrationTest {
         assertNotNull(response);
         assertNotNull(response.getResponse());
 
+        @SuppressWarnings("unchecked")
         List<Object> objects = (List<Object>) response.getResponse().get("pets");
         List<Pet> found = new ArrayList<Pet>();
         objects.forEach((object) -> {
@@ -393,30 +400,29 @@ public class PetControllerIntegrationTest {
         return found;
     }
 
-    // TODO: OOPS! This is flipped. it's usually (expected, actual). Fix!
-    private void testFields(Pet actual, Pet expected) {
+    private void testFields(Pet expected, Pet actual) {
         assertNotNull(actual);
 
         assertNotNull(actual.getId());
         assertThat(actual.getId()).isPositive();
 
         assertNotNull(actual.getType());
-        assertEquals(actual.getType(), expected.getType());
+        assertEquals(expected.getType(), actual.getType());
 
         assertNotNull(actual.getAge());
-        assertEquals(actual.getAge(), expected.getAge());
+        assertEquals(expected.getAge(), actual.getAge());
 
         assertNotNull(actual.getSex());
-        assertEquals(actual.getSex(), expected.getSex());
+        assertEquals(expected.getSex(), actual.getSex());
 
         assertNotNull(actual.getDescription());
-        assertEquals(actual.getDescription(), expected.getDescription());
+        assertEquals(expected.getDescription(), actual.getDescription());
 
         assertNotNull(actual.getOwner_email());
-        assertEquals(actual.getOwner_email(), expected.getOwner_email());
+        assertEquals(expected.getOwner_email(), actual.getOwner_email());
 
         assertNotNull(actual.getImage_url());
-        assertEquals(actual.getImage_url(), expected.getImage_url());
+        assertEquals(expected.getImage_url(), actual.getImage_url());
 
     }
 }
