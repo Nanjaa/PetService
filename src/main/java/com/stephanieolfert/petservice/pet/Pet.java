@@ -50,7 +50,7 @@ public class Pet {
     private String owner_email;
 
     @Column(name = "image_url", nullable = false)
-    @Pattern(regexp = "(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)", message = "Image URL must be a valid format")
+    @Pattern(regexp = "([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)", message = "Image URL must be a valid format")
     private String image_url;
 
     // Constants

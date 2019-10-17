@@ -3,9 +3,11 @@ package com.stephanieolfert.petservice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -25,11 +27,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stephanieolfert.petservice.data.PetRepository;
 import com.stephanieolfert.petservice.pet.Pet;
 import com.stephanieolfert.petservice.util.CreateRequest;
+import com.stephanieolfert.petservice.util.DeleteRequest;
 import com.stephanieolfert.petservice.util.Response;
 
 @RunWith(SpringRunner.class)
@@ -257,8 +261,116 @@ public class PetControllerIntegrationTest {
 
     } // whenInvalidField_thenDontUpdate();
 
-    // TODO: PUT - no id, no changes, invalid no change, valid change
-    // TODO: DELETE pets
+    @Test
+    public void whenValidFields_thenUpdate() throws Exception {
+
+        List<Pet> pets = TestUtils.newValidPetList();
+        petRepository.saveAll(pets);
+        Pet myCat = petRepository.save(TestUtils.newCat());
+
+        Pet updated = new Pet();
+        updated.setId(myCat.getId());
+        updated.setName("TEST");
+        updated.setType(Pet.TYPE_DOG);
+        updated.setAge(11);
+        updated.setSex(Pet.SEX_F);
+        updated.setDescription("THIS IS A TEST!");
+        updated.setOwner_email("test@stephanieolfert.com");
+        updated.setImage_url("/newImage.png");
+
+        String json = "{\"pets\": [{" + "\"id\": \"" + updated.getId() + "\", " + "\"name\": \"" + updated.getName()
+                + "\", " + "\"type\": " + updated.getType() + ", " + "\"age\": " + updated.getAge() + ", " + "\"sex\": "
+                + updated.getSex() + ", " + "\"description\": \"" + updated.getDescription() + "\", "
+                + "\"owner_email\": \"" + updated.getOwner_email() + "\", " + "\"image_url\": \""
+                + updated.getImage_url() + "\"}]}";
+
+        MvcResult result = this.mockMvc
+                .perform(put("/pets").contentType(MediaType.APPLICATION_JSON).content(json.getBytes()))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        Response response = objectMapper.readValue(result.getResponse().getContentAsString(), Response.class);
+        assertNotNull(response);
+        assertNotNull(response.getResponse());
+
+        List<Object> objects = (List<Object>) response.getResponse().get("updatedPets");
+        List<Pet> updatedPets = new ArrayList<Pet>();
+        objects.forEach((object) -> {
+            ObjectMapper mapper = new ObjectMapper();
+            updatedPets.add(mapper.convertValue(object, Pet.class));
+        });
+
+        assertThat(updatedPets).hasSize(1);
+
+        Optional<Pet> found = petRepository.findById(myCat.getId());
+        assertNotNull(found);
+        assertEquals(updated, found.get());
+
+        petRepository.deleteAll();
+
+    } // whenValidFields_thenUpdate();
+
+    @Test
+    public void whenInvalidId_thenDontDelete() throws Exception {
+
+        Pet myCat = petRepository.save(TestUtils.newCat());
+
+        List<Long> ids = new ArrayList<Long>();
+        ids.add(myCat.getId() + 1);
+        DeleteRequest delete = new DeleteRequest();
+        delete.setIds(ids);
+
+        MvcResult result = this.mockMvc
+                .perform(MockMvcRequestBuilders.delete("/pets").contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.toJson(delete)))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertNotNull(content);
+        assertThat(content, containsString("Invalid id"));
+
+        Response response = objectMapper.readValue(content, Response.class);
+        assertNotNull(response);
+        assertNotNull(response.getResponse());
+
+        List<Object> objects = (List<Object>) response.getResponse().get("deletedIds");
+        assertTrue(objects.isEmpty());
+
+        Iterable<Pet> allPets = petRepository.findAll();
+        assertThat(allPets).hasSize(1);
+
+        petRepository.deleteAll();
+    } // whenInvalidId_thenDontDelete();
+
+    @Test
+    public void whenValidId_thenDelete() throws Exception {
+
+        Pet myCat = petRepository.save(TestUtils.newCat());
+
+        List<Long> ids = new ArrayList<Long>();
+        ids.add(myCat.getId());
+        DeleteRequest delete = new DeleteRequest();
+        delete.setIds(ids);
+
+        MvcResult result = this.mockMvc
+                .perform(MockMvcRequestBuilders.delete("/pets").contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.toJson(delete)))
+                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        Response response = objectMapper.readValue(result.getResponse().getContentAsString(), Response.class);
+        assertNotNull(response);
+        assertNotNull(response.getResponse());
+
+        List<Object> objects = (List<Object>) response.getResponse().get("deletedIds");
+        assertFalse(objects.isEmpty());
+        Long objectId = Long.parseLong(objects.get(0).toString());
+        assertEquals(myCat.getId(), objectId);
+
+        Iterable<Pet> allPets = petRepository.findAll();
+        assertThat(allPets).hasSize(0);
+    } // whenValidId_thenDelete();
 
     private List<Pet> searchResults(String json) throws Exception {
         MvcResult result = this.mockMvc
