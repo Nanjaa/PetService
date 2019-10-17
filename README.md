@@ -23,7 +23,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
   * Accept: application/json
   * Content-Type: application/json
 
-#Create
+##Create
 * HTTP Request: **POST**
 * Endpoint: **/pets**
 * Accepts a list of pets (format below)
@@ -43,7 +43,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
   	}
 ]}
 ```
-#Update
+##Update
 * HTTP Request: **PUT**
 * Endpoint: **/pets**
 * Accepts a list of pets (format below)
@@ -65,7 +65,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
 ]}
 ```
 
-#Delete
+##Delete
 * HTTP Request: **DELETE**
 * Endpoint: **/pets**
 * Accepts a list of ids (format below)
@@ -76,7 +76,7 @@ This is a REST API that handles a database of pets. It is written in Java using 
 { "ids": []}
 ```
 
-#Search
+##Search
 * HTTP Request: **GET**
 * Endpoint: **/pets**
 * Accepts a single search criteria object (optional)
