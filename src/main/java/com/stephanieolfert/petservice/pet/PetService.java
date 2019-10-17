@@ -97,12 +97,13 @@ public class PetService {
     public Response createPets(List<Pet> pets) {
 
         List<Long> ids = new ArrayList<Long>();
-        Map<String, Object> responseBody = new HashMap<String, Object>();
 
         Iterable<Pet> savedPets = petRepository.saveAll(pets);
         savedPets.forEach((pet) -> {
             ids.add(pet.getId());
         });
+
+        Map<String, Object> responseBody = new HashMap<String, Object>();
         responseBody.put("ids", ids);
 
         Response response = new Response(new Date(), HttpStatus.OK, null, responseBody);
@@ -167,7 +168,6 @@ public class PetService {
 
         Iterable<Pet> existing = petRepository.findAllById(ids);
         Map<String, String> errors = new HashMap<String, String>();
-        Map<String, Object> responseBody = new HashMap<String, Object>();
         List<Long> deleted = new ArrayList<Long>();
 
         for (Pet pet : existing) {
@@ -180,6 +180,8 @@ public class PetService {
             });
         }
         petRepository.deleteAll(existing);
+
+        Map<String, Object> responseBody = new HashMap<String, Object>();
         responseBody.put("deletedIds", deleted);
         Response response = new Response(new Date(), HttpStatus.OK, errors, responseBody);
         return response;

@@ -10,7 +10,7 @@ public class Response {
     private final HttpStatus status;
     private final Map<String, String> errors;
     private final Map<String, Object> response;
-    
+
     public Response(Date timestamp, HttpStatus status, Map<String, String> errors, Map<String, Object> response) {
         super();
         this.timestamp = timestamp;
@@ -22,7 +22,7 @@ public class Response {
     public Date getTimestamp() {
         return timestamp;
     }
-    
+
     public HttpStatus getStatus() {
         return status;
     }

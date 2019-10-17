@@ -1,0 +1,11 @@
+com\stephanieolfert\petservice\Application.class
+com\stephanieolfert\petservice\util\SearchRequest.class
+com\stephanieolfert\petservice\pet\PetService.class
+com\stephanieolfert\petservice\util\UpdateRequest.class
+com\stephanieolfert\petservice\pet\Pet.class
+com\stephanieolfert\petservice\util\Response.class
+com\stephanieolfert\petservice\pet\PetController.class
+com\stephanieolfert\petservice\util\CreateRequest.class
+com\stephanieolfert\petservice\pet\OptionalFieldsPet.class
+com\stephanieolfert\petservice\util\DeleteRequest.class
+com\stephanieolfert\petservice\data\PetRepository.class
